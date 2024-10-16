@@ -4,35 +4,35 @@ import GUI from 'lil-gui'
 
 // *** Path ------------------------------------------------------------------
 // Making a sin curve
-class CustomSinCurve extends THREE.Curve {
-	constructor( scale = 1 ) {
-		super();
-		this.scale = scale;
-	}
-	getPoint( t, optionalTarget = new THREE.Vector3() ) {
-		const tx = t * 3 - 1.5;
-		const ty = Math.sin( 2 * Math.PI * t );
-		const tz = 0;
-		return optionalTarget.set( tx, ty, tz ).multiplyScalar( this.scale );
-	}
-}
+// class CustomSinCurve extends THREE.Curve {
+// 	constructor( scale = 1 ) {
+// 		super();
+// 		this.scale = scale;
+// 	}
+// 	getPoint( t, optionalTarget = new THREE.Vector3() ) {
+// 		const tx = t * 3 - 1.5;
+// 		const ty = Math.sin( 2 * Math.PI * t );
+// 		const tz = 0;
+// 		return optionalTarget.set( tx, ty, tz ).multiplyScalar( this.scale );
+// 	}
+// }
 // vector points to connect
 const vert1Points = [
-    new THREE.Vector3(0, 0, -1),
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(0, 0, 2)  ];
+    new THREE.Vector3(0, -0.2, -1),
+    new THREE.Vector3(0, 0.2, 0),
+    new THREE.Vector3(0, -0.2, 1)  ];
 const vert2Points = [
-    new THREE.Vector3(1, 0, -1),
-    new THREE.Vector3(1, 0, 0),
-    new THREE.Vector3(1, 0, 2) ];
+    new THREE.Vector3(1, 0.2, -1),
+    new THREE.Vector3(1, -0.2, 0),
+    new THREE.Vector3(1, 0.2, 1) ];
 const horiz1Points = [
-    new THREE.Vector3(-1, 0, 0),
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(2, 0, 0) ];
+    new THREE.Vector3(-1, 0.2, 0),
+    new THREE.Vector3(0, -0.2, 0),
+    new THREE.Vector3(1, 0.2, 0) ];
 const horiz2Points = [
-    new THREE.Vector3(-1, 0, 1),
-    new THREE.Vector3(0, 0, 1),
-    new THREE.Vector3(2, 0, 1) ];
+    new THREE.Vector3(-1, -0.2, 1),
+    new THREE.Vector3(0, 0.2, 1),
+    new THREE.Vector3(1, -0.2, 1) ];
 
 // connecting the points
 const vert1Curve = new THREE.CatmullRomCurve3(vert1Points);
@@ -61,11 +61,11 @@ scene.add(directionalLight)
 
 // *** grid ------------------------------------------------------------
 const gridHelper = new THREE.GridHelper( 10, 10, 0x800080, 0x800080 );
-gridHelper.position.set(0, -2.5, 0);
+gridHelper.position.set(0, -1.7, 0);
 scene.add(gridHelper);
 
 const axesHelper = new THREE.AxesHelper(2);  // 5 is the length of the axes
-axesHelper.position.set(-7, -3, 0);  // Move the axes to the side along the X-axis
+axesHelper.position.set(-7, -0.5, 0);  // Move the axes to the side along the X-axis
 scene.add(axesHelper);
 
 // *** Objects ------------------------------------------------------------
@@ -73,8 +73,11 @@ scene.add(axesHelper);
 const planeMaterial = new THREE.MeshStandardMaterial()
 planeMaterial.roughness = 0.4
 
-const material = new THREE.MeshStandardMaterial({color: 0x00FF44})
-material.roughness = 0.4
+const vertMaterial = new THREE.MeshStandardMaterial({color: 0x00FF44})
+vertMaterial.roughness = 0.4
+
+const horizMaterial = new THREE.MeshStandardMaterial({color: 0x0044FF})
+horizMaterial.roughness = 0.4
 
 // // thread function for geometry
 // function createThread(color, radius, length) {
@@ -110,10 +113,10 @@ const vert1tubeGeometry = new THREE.TubeGeometry(vert1Curve, tubeSegments, tubeR
 const vert2tubeGeometry = new THREE.TubeGeometry(vert2Curve, tubeSegments, tubeRadius, 20, false);
 const horiz1tubeGeometry = new THREE.TubeGeometry(horiz1Curve, tubeSegments, tubeRadius, 20, false);
 const horiz2tubeGeometry = new THREE.TubeGeometry(horiz2Curve, tubeSegments, tubeRadius, 20, false);
-const vert1Mesh = new THREE.Mesh(vert1tubeGeometry, material);
-const vert2Mesh = new THREE.Mesh(vert2tubeGeometry, material);
-const horiz1Mesh = new THREE.Mesh(horiz1tubeGeometry, material);
-const horiz2Mesh = new THREE.Mesh(horiz2tubeGeometry, material);
+const vert1Mesh = new THREE.Mesh(vert1tubeGeometry, vertMaterial);
+const vert2Mesh = new THREE.Mesh(vert2tubeGeometry, vertMaterial);
+const horiz1Mesh = new THREE.Mesh(horiz1tubeGeometry, horizMaterial);
+const horiz2Mesh = new THREE.Mesh(horiz2tubeGeometry, horizMaterial);
 scene.add(vert1Mesh);
 scene.add(vert2Mesh);
 scene.add(horiz1Mesh);
@@ -143,12 +146,9 @@ scene.add(horiz2Mesh);
 // const yarn_noodle_mesh = new THREE.Mesh( yarn_noodle, material );
 
 // plane
-const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(10, 10),
-    planeMaterial
-)
+const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), planeMaterial)
 plane.rotation.x = - Math.PI * 0.5
-plane.position.y = -3
+plane.position.y = -2
 scene.add(plane)
 
 // scene.add(sphere, cube, torus, plane)
@@ -177,7 +177,7 @@ window.addEventListener('resize', () =>
 
 // *** Camera ------------------------------------------------------------
 // Base camera
-const camera = new THREE.PerspectiveCamera(140, sizes.width / sizes.height, 0.1, 100)
+const camera = new THREE.PerspectiveCamera(100, sizes.width / sizes.height, 0.1, 100)
 camera.position.x = 1
 camera.position.y = 1
 camera.position.z = 2
