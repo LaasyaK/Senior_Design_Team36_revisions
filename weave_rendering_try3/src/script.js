@@ -6,10 +6,9 @@ import GUI from 'lil-gui'
 // --------------------------------------------------------------------------------
 // * hard coded input * 
 const basicWeave2DArray = [
-    [1, 0, 1, 4],   // First row
-    [0, 1, 2, 1],   // Second row
-    [1, 0, 1, 0],   // Third row
-    [0, 1, 0, 1]    // Fourth row
+    [1, 0, 1],   // First row
+    [0, 1, 0],   // Second row
+    [1, 0, 1]    // Third row
 ];
 
 // --------------------------------------------------------------------------------
@@ -30,10 +29,10 @@ function weft (xPos, zPos, weftMaterial) {
 function wefts (xPos, spacing, weftNum, weftMaterial, scene) {
     // determining zPos
     let zPos;
-    if (weftNum % 2 === 0) {                                    // even weftNum
+    if (weftNum % 2 === 0) {                                // even weftNum
         zPos = (-1*((weftNum-1)*(spacing/2)));
     }
-    else {                                                      // odd weftNum
+    else {                                                  // odd weftNum
         zPos = (-1*(((Math.floor(weftNum/2))*spacing)));
     }
     let weftMeshes = [];
@@ -42,7 +41,7 @@ function wefts (xPos, spacing, weftNum, weftMaterial, scene) {
         const weftMesh = weft(xPos, zPos, weftMaterial);
         scene.add(weftMesh);
         weftMeshes.push(weftMesh);
-        zPos = zPos + spacing;                                  // incrementing zPos
+        zPos = zPos + spacing;                              // incrementing zPos
     }
 
     return weftMeshes;
@@ -69,18 +68,29 @@ function warp (row, warpMaterial) {
     return warpMesh;
 }
 // creating all of the yarn noodle wefts
-function warps (array, warpMaterial, scene) {
+function warps (array, spacing, warpMaterial, scene) {
     // transpose array
     const transposedArray = array[0].map((_, colIndex) => array.map(row => row[colIndex]));
-    let warpMesh;                                       // initialize mesh
-    let xPosition = -1*((transposedArray.length)/2);    // start of x pos
-    // for each row in array
+    // determining xPos
+    let xPos;
+    if (transposedArray.length % 2 === 0) {                 // even warps
+        xPos = (-1*((transposedArray.length-1)*(spacing/2)));
+    }
+    else {                                                  // odd warps
+        xPos = (-1*(((Math.floor(transposedArray.length/2))*spacing)));
+    }
+    let warpMesh;                                           // initialize mesh
+    let warpMeshes = [];
+    // for each row in array, each warp
     for (let i = 0; i < transposedArray.length; i++) {
         warpMesh = warp(transposedArray[i], warpMaterial);  // make mesh
-        warpMesh.position.x = xPosition;                // change x pos
-        scene.add(warpMesh);                            // add to scene
-        xPosition++;                                    // increment x pos for next warp
+        warpMesh.position.x = xPos;                         // change x pos
+        scene.add(warpMesh);                                // add to scene
+        xPos = xPos + spacing;                              // increment x pos for next warp
+        warpMeshes.push(warpMesh);
     }
+
+    return warpMeshes;
 }
 
 // --------------------------------------------------------------------------------
@@ -126,7 +136,7 @@ horizMaterial.roughness = 0.4
 
 // adding wefts and warps to scence
 let weftMeshes = wefts(3, 1, (basicWeave2DArray.length), horizMaterial, scene);
-warps(basicWeave2DArray, vertMaterial, scene);
+let warpMeshes = warps(basicWeave2DArray, 1, vertMaterial, scene);
 
 // plane
 const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), planeMaterial)
