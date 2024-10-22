@@ -14,7 +14,9 @@ const basicWeave2DArray = [
 // --------------------------------------------------------------------------------
 // * weft and warp functions * 
 // creating 1 yarn noodle weft
-function weft (xPos, zPos, weftMaterial) {
+function weft (arrayInput, zPos, weftMaterial) {
+    // xPos = length of weft noodles
+    const xPos = ((arrayInput[0].length)+((arrayInput[0].length)*0.1))/2;
     // array pts -> curve
     const weftCurve = new THREE.CatmullRomCurve3([
         new THREE.Vector3(-1*(xPos), 0, zPos),
@@ -22,39 +24,36 @@ function weft (xPos, zPos, weftMaterial) {
     ]);
     // curve, geometry -> mesh
     const weftMesh = new THREE.Mesh(new THREE.TubeGeometry(weftCurve, 64, 0.1, 20, false), weftMaterial);
-
     return weftMesh;
 }
 // creating all of the yarn noodle wefts
-function wefts (xPos, spacing, weftNum, weftMaterial, scene) {
-    // determining zPos
+function wefts (arrayInput, spacing, weftMaterial, scene) {
+    let weftNum = arrayInput.length;                        // get number of wefts from array
+    // determining zPos of wefts
     let zPos;
-    if (weftNum % 2 === 0) {                                // even weftNum
-        zPos = (-1*((weftNum-1)*(spacing/2)));
-    }
-    else {                                                  // odd weftNum
-        zPos = (-1*(((Math.floor(weftNum/2))*spacing)));
-    }
+    // even number of weft noodles
+    if (weftNum % 2 === 0) { zPos = (-1*((weftNum-1)*(spacing/2))); } 
+    // odd number of weft noodles
+    else { zPos = (-1*(((Math.floor(weftNum/2))*spacing))); }
     let weftMeshes = [];
     // adding wefts to scene
     for (let i = 0; i < weftNum; i++) {                      
-        const weftMesh = weft(xPos, zPos, weftMaterial);
+        const weftMesh = weft(arrayInput, zPos, weftMaterial);
         scene.add(weftMesh);
         weftMeshes.push(weftMesh);
         zPos = zPos + spacing;                              // incrementing zPos
     }
-
     return weftMeshes;
 }
 // creating 1 yarn noodle warp
-function warp (row, warpMaterial) {
-    let zPosition = -1*((row.length)/2);                    // z pos start
+function warp (warpRow, warpMaterial) {
+    let zPosition = -1*((warpRow.length)/2);                    // z pos start
     let warpArrayPoints = [];                               // initializing array to hold all of vec points
     let yPosition = 0;                                      // initializing y pos
     let point;                                              // initializing point for array
     // for each element in the row -> array points
-    for (let k = 0; k < row.length; k++) {
-        if (row[k]==1) { yPosition = 0.2; }                 // determine the y pos of point
+    for (let k = 0; k < warpRow.length; k++) {
+        if (warpRow[k]==1) { yPosition = 0.2; }                 // determine the y pos of point
         else { yPosition = -0.2; }
         point = new THREE.Vector3(0, yPosition, zPosition); // put into z pos and y pos
         warpArrayPoints.push(point);                        // put point into array
@@ -91,6 +90,15 @@ function warps (array, spacing, warpMaterial, scene) {
     }
 
     return warpMeshes;
+}
+// creates the wefts and warps
+function weave (arrayInput, spacing, weftMaterial, warpMaterial, scene) {
+    // create the weft and warp meshes
+    let weftMeshes = wefts(arrayInput, spacing, weftMaterial, scene);
+    let warpMeshes = warps(arrayInput, spacing, warpMaterial, scene);
+
+    // have the weftMeshe edges and warpMeshes edges matches in in rect prism
+    // create it at the orign
 }
 
 // --------------------------------------------------------------------------------
@@ -134,9 +142,10 @@ vertMaterial.roughness = 0.4
 const horizMaterial = new THREE.MeshStandardMaterial({color: 0x0044FF})
 horizMaterial.roughness = 0.4
 
-// adding wefts and warps to scence
-let weftMeshes = wefts(3, 1, (basicWeave2DArray.length), horizMaterial, scene);
-let warpMeshes = warps(basicWeave2DArray, 1, vertMaterial, scene);
+// adding wefts and warps to scene
+weave (
+    basicWeave2DArray, 1, 
+    horizMaterial, vertMaterial, scene);
 
 // plane
 const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), planeMaterial)
