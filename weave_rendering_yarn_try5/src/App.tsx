@@ -1,18 +1,16 @@
 // * Notes *
-// created the warps functions and constant re-rendering on changes
-// need to create a simple warp 
-// then create warps re-rendering
+// fix the spacing in the continously rendering fucntion for the entire weave by having a differnt sliders for weft and warp spacing
 
-import React, { useMemo, useRef, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber'
+import React/*, { useMemo, useRef, useEffect } */ from 'react';
+import { Canvas/*, useFrame*/ } from '@react-three/fiber'
 import {
   OrbitControls,
   GizmoHelper,
-  GizmoViewcube,
+  /*GizmoViewcube,*/
   GizmoViewport,
-  useHelper,
+  /*useHelper,*/
   Plane,
-  Tube
+  /*Tube*/
 } from '@react-three/drei'
 import { useControls } from 'leva'
 import * as THREE from 'three'
@@ -20,17 +18,16 @@ import './App.css'
 
 
 // input weave array
-type WeaveArray = number[][];
-const basicWeave2DArray: WeaveArray = [
+const basicWeave2DArray: number[][] = [
   [1, 0, 1, 0],
-  [0, 1, 1, 1],
+  [0, 1, 0, 1],
   [1, 0, 1, 0],
   [0, 1, 0, 1]
 ];
 
 // * wefts functions *
 type WeftProps = {
-  weaveArray: WeaveArray;
+  weaveArray: number[][];
   zPosition: number;
   color: string;
 }
@@ -51,7 +48,7 @@ const Weft: React.FC<WeftProps> = ({ weaveArray, zPosition, color }) => {
   );
 };
 type WeftsProps = {
-  weaveArray: WeaveArray;
+  weaveArray: number[][];
   color: string;
   spacing: number;
 }
@@ -75,8 +72,89 @@ const Wefts: React.FC<WeftsProps> = ({ weaveArray, color, spacing }) => {
     </>
   );
 };
-// continuously renders the weft grouping
-const ChangingWeft: React.FC = () => {
+
+// * warp functions *
+type WarpProps = {
+  weaveArray: number[][];
+  warpRow: number[];
+  xPosition: number;
+  color: string;
+}
+// creates 1 weft
+const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color }) => {   // TODO NEEDS A VARIABLE X POS  
+  const warpCurve = React.useMemo(() => {
+    let warpArrayPoints = [];
+    const numWefts = weaveArray.length;     // determing the start z position
+    const startPosition = numWefts % 2 === 0
+      ? (-1 * ((numWefts - 1) / 2/* * (spacing / 2)*/))
+      : (-1 * ((Math.floor(numWefts / 2))/* * spacing*/));
+    // 1st warp point outside weft
+    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition - 0.6));
+    for (let i = 0; i < warpRow.length; i++) {
+      const yPosition = warpRow[i] === 1 ? 0.2 : -0.2;
+      warpArrayPoints.push(new THREE.Vector3(xPosition, yPosition, startPosition + i));
+    }
+    // last warp point outside of the warp
+    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition + (warpRow.length - 1) + 0.6));
+    return new THREE.CatmullRomCurve3(warpArrayPoints);
+  }, [warpRow]);
+  return (
+    <mesh>
+      <tubeGeometry args={[warpCurve, 64, 0.1, 20, false]} />
+      <meshStandardMaterial color={color} />
+    </mesh>
+  );
+};
+type WarpsProps = {
+  weaveArray: number[][];
+  color: string;
+  spacing: number;
+}
+// creates a grouping of wefts
+const Warps: React.FC<WarpsProps> = ({ weaveArray, color, spacing }) => {
+  const transposedArray = weaveArray[0].map((_, colIndex) => weaveArray.map(row => row[colIndex]));
+  const numWarps = weaveArray[0].length;
+  const startPosition = numWarps % 2 === 0
+    ? (-1 * ((numWarps - 1) / 2 * (spacing / 2)))
+    : (-1 * ((Math.floor(numWarps / 2)) * spacing));
+  return (
+    <>
+      {Array.from({ length: transposedArray.length }, (_, index) => {
+        const row = transposedArray[index];
+        const xPosition = startPosition + index * spacing;
+        return <Warp
+          key={index}
+          weaveArray={basicWeave2DArray}
+          xPosition={xPosition}
+          warpRow={row}
+          color={color}
+        />
+      })}
+    </>
+  );
+};
+// // continuously renders the warp grouping
+// const ChangingWarps: React.FC = () => {
+//   const { color, spacing } = useControls({    // creating slider for spacing
+//     color: '#0000F0',
+//     spacing: {
+//       value: 1.0,
+//       min: 0.0,
+//       max: 5.0,
+//       step: 0.1
+//     }
+//   });
+//   return (      // returning the weft grouping
+//     <Warps
+//       weaveArray={basicWeave2DArray}
+//       color={color}
+//       spacing={spacing}
+//     />
+//   );
+// };
+
+// continuously renders the weft and warp grouping together
+const ChangingWeave: React.FC = () => {
   const { color, spacing } = useControls({    // creating slider for spacing
     color: '#0000FF',
     spacing: {
@@ -94,29 +172,6 @@ const ChangingWeft: React.FC = () => {
     />
   );
 };
-
-// // * warp functions *
-// type WarpProps = {
-//   weaveArray: WeaveArray;
-//   zPosition: number;
-//   color: string;
-// }
-// // creates 1 weft
-// const Warp: React.FC<WarpProps> = ({ weaveArray, zPosition, color }) => {
-//   const xPosition = ((weaveArray[0].length) + 0.2) / 2;
-//   const weftCurve = React.useMemo(() => {
-//     return new THREE.CatmullRomCurve3([
-//       new THREE.Vector3((-1 * (xPosition)), 0, zPosition),
-//       new THREE.Vector3(xPosition, 0, zPosition)
-//     ]);
-//   }, [zPosition]);    // renders weftcurve only if zPosition changes
-//   return (
-//     <mesh>
-//       <tubeGeometry args={[weftCurve, 64, 0.1, 20, false]} />
-//       <meshStandardMaterial color={color} />
-//     </mesh>
-//   );
-// };
 
 
 
@@ -148,8 +203,11 @@ function App() {
         <axesHelper args={[10]} />
 
         {/* continuously rendering weft grouping */}
-        <ChangingWeft />
+        <ChangingWeave />
 
+        {/* <ChangingWarps /> */}
+
+        {/* <Warps weaveArray={basicWeave2DArray} color={'#00FF00'} /> */}
 
 
         {/* lights */}
