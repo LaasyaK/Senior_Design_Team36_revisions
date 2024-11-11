@@ -1,6 +1,7 @@
 // * Notes *
-// add better limits to the spacing of the weft and warp so can't go too small
 // add buttons to tile to match the theme of the layout that control variable functions
+//    add a button to toggle grid
+//    toggle gizmo cube (and make it smaller)
 // take in 4 layer weave pattern and create 4 layer viz
 
 import React/*, { useMemo, useRef, useEffect } */ from 'react';
@@ -21,11 +22,22 @@ import './App.css'
 
 // input weave array
 const basicWeave2DArray: number[][] = [
-  [1, 0, 1, 0, 1],
-  [0, 1, 0, 1, 0],
-  [1, 0, 1, 0, 1],
-  [0, 1, 0, 1, 0],
-  [1, 0, 1, 0, 1]
+  [1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0],
+  [1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+  [1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0],
+  [1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
+  [1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+  [1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+  [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 
 // * wefts functions *
@@ -264,7 +276,7 @@ function App() {
 
         {/* plane and helpers */}
         <Plane
-          args={[10, 10]}
+          args={[20, 20]}
           rotation-x={-Math.PI * 0.5}
           position-y={-1.05}>
           <meshStandardMaterial color={"#DDDDDD"} />
@@ -273,18 +285,18 @@ function App() {
           <GizmoViewport />
         </GizmoHelper>
         <primitive
-          object={new THREE.GridHelper(10, 10, "#C0C0C0", "#C0C0C0")}
+          object={new THREE.GridHelper(20, 20, "#C0C0C0", "#C0C0C0")}
           position={[0, -1, 0]} />
-        <axesHelper args={[10]} />
+        <axesHelper args={[20]} />
 
         {/* continuously rendering weave */}
         <ChangingWeave />
 
         {/* lights */}
-        <ambientLight intensity={0.7} color={'white'} />
+        <ambientLight intensity={0.8} color={'white'} />
         <directionalLight
           color={"white"}
-          intensity={0.6}
+          intensity={0.9}
           position={[25, 25, 0]}
         />
 
