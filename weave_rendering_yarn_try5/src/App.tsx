@@ -48,35 +48,50 @@ const Weft: React.FC<WeftProps> = ({ weaveArray, zPosition, color, thickness, wa
       new THREE.Vector3((startPosition + (numWarps - 1) * warpSpacing) + 0.6, 0, zPosition)
     ]);
   }, [weaveArray, zPosition, warpSpacing]);    // renders weftcurve only if zPosition changes
+  // get start and end end of the path
+  const startPoint = weftCurve.getPoint(0);
+  const endPoint = weftCurve.getPoint(1);
   return (
-    <mesh>
-      <tubeGeometry args={[weftCurve, 64, thickness, 15, false]} />
-      <meshPhysicalMaterial
-        color={color}
-        roughness={0.9}
-        clearcoat={0.1}
-        clearcoatRoughness={0.7}
-      />
-    </mesh>
+    <>
+      {/* warp noodle */}
+      <mesh>
+        <tubeGeometry args={[weftCurve, 64, thickness, 15, false]} />
+        <meshPhysicalMaterial
+          color={color}
+          roughness={0.9}
+          clearcoat={0.1}
+          clearcoatRoughness={0.7}
+        />
+        {/* start and end circles of warp noodle */}
+      </mesh>
+      <mesh position={startPoint} rotation={[0, -1 * (Math.PI / 2), 0]}>
+        <circleGeometry args={[thickness, 20]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+      <mesh position={endPoint} rotation={[0, (Math.PI / 2), 0]}>
+        <circleGeometry args={[thickness, 20]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+    </>
   );
 };
 type WeftsProps = {
   weaveArray: number[][];
   color: string;
   thickness: number;
-  spacing: number;
+  weftSpacing: number;
   warpSpacing: number;
 }
 // creates a grouping of wefts
-const Wefts: React.FC<WeftsProps> = ({ weaveArray, color, thickness, spacing, warpSpacing }) => {
+const Wefts: React.FC<WeftsProps> = ({ weaveArray, color, thickness, weftSpacing, warpSpacing }) => {
   const numWefts = weaveArray.length;
   const startPosition = numWefts % 2 === 0
-    ? (-1 * ((numWefts - 1) * (spacing / 2)))
-    : (-1 * ((Math.floor(numWefts / 2)) * spacing));
+    ? (-1 * ((numWefts - 1) * (weftSpacing / 2)))
+    : (-1 * ((Math.floor(numWefts / 2)) * weftSpacing));
   return (
     <>
       {Array.from({ length: numWefts }, (_, index) => {
-        const zPosition = startPosition + index * spacing;    // alters next weft based on spacing
+        const zPosition = startPosition + index * weftSpacing;    // alters next weft based on spacing
         return <Weft
           key={index}
           weaveArray={weaveArray}
@@ -108,26 +123,42 @@ const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warp
     const startPosition = numWefts % 2 === 0
       ? (-1 * ((numWefts - 1) * (weftSpacing / 2)))
       : (-1 * (Math.floor(numWefts / 2)) * weftSpacing);
-    // 1st warp point outside weft
-    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition - 0.6));   // offsetting with extra noodle
+    // 1st 2 warp point outside weft
+    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition - (1.6 * (warpThickness + weftThickness))));
+    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition - (1.4 * (warpThickness + weftThickness))));
     for (let i = 0; i < warpRow.length; i++) {
       const yPosition = warpRow[i] === 1 ? (weftThickness + warpThickness) : (-1 * (weftThickness) - warpThickness);
       warpArrayPoints.push(new THREE.Vector3(xPosition, yPosition, startPosition + i * weftSpacing));
     }
-    // last warp point outside of the warp
-    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition + (warpRow.length - 1) * weftSpacing + 0.6));
+    // last 2 warp point outside of the warp
+    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition + (warpRow.length - 1) * weftSpacing + (1.4 * (warpThickness + weftThickness))));
+    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition + (warpRow.length - 1) * weftSpacing + (1.6 * (warpThickness + weftThickness))));
     return new THREE.CatmullRomCurve3(warpArrayPoints);
-  }, [weaveArray, warpRow, xPosition, weftSpacing]);
+  }, [weaveArray, warpRow, xPosition, warpThickness, weftThickness, weftSpacing]);
+  const startPoint = warpCurve.getPoint(0);
+  const endPoint = warpCurve.getPoint(1);
   return (
-    <mesh>
-      <tubeGeometry args={[warpCurve, 64, warpThickness, 20, false]} />
-      <meshPhysicalMaterial
-        color={color}
-        roughness={0.9}
-        clearcoat={0.1}
-        clearcoatRoughness={0.7}
-      />
-    </mesh>
+    <>
+      {/* weft noodle */}
+      <mesh>
+        <tubeGeometry args={[warpCurve, 64, warpThickness, 20, false]} />
+        <meshPhysicalMaterial
+          color={color}
+          roughness={0.9}
+          clearcoat={0.1}
+          clearcoatRoughness={0.7}
+        />
+      </mesh>
+      {/* start and end circles of of weft noodle */}
+      <mesh position={startPoint} rotation={[0, Math.PI, 0]}>
+        <circleGeometry args={[warpThickness, 20]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+      <mesh position={endPoint} >
+        <circleGeometry args={[warpThickness, 20]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+    </>
   );
 };
 type WarpsProps = {
@@ -184,7 +215,7 @@ const ChangingWeave: React.FC = () => {
       weft_thickness: {
         value: 0.1,
         min: 0.01,
-        max: 0.8,
+        max: 0.6,
         step: 0.01
       },
       warp_color: '#7CAAF4',
@@ -197,7 +228,7 @@ const ChangingWeave: React.FC = () => {
       warp_thickness: {
         value: 0.1,
         min: 0.01,
-        max: 0.8,
+        max: 0.6,
         step: 0.01
       }
     });
@@ -206,7 +237,7 @@ const ChangingWeave: React.FC = () => {
       weaveArray={basicWeave2DArray}
       color={weft_color}
       thickness={weft_thickness}
-      spacing={weft_spacing}
+      weftSpacing={weft_spacing}
       warpSpacing={warp_spacing} />
       <Warps
         weaveArray={basicWeave2DArray}
@@ -235,7 +266,7 @@ function App() {
         <Plane
           args={[10, 10]}
           rotation-x={-Math.PI * 0.5}
-          position-y={-1}>
+          position-y={-1.05}>
           <meshStandardMaterial color={"#DDDDDD"} />
         </Plane>
         <GizmoHelper alignment='top-left' margin={[80, 80]}>
@@ -243,7 +274,7 @@ function App() {
         </GizmoHelper>
         <primitive
           object={new THREE.GridHelper(10, 10, "#C0C0C0", "#C0C0C0")}
-          position={[0, -0.9, 0]} />
+          position={[0, -1, 0]} />
         <axesHelper args={[10]} />
 
         {/* continuously rendering weave */}
