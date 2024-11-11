@@ -1,5 +1,7 @@
 // * Notes *
-// fix the spacing in the continously rendering fucntion for the entire weave by having a differnt sliders for weft and warp spacing
+// add better limits to the spacing of the weft and warp so can't go too small
+// add buttons to tile to match the theme of the layout that control variable functions
+// take in 4 layer weave pattern and create 4 layer viz
 
 import React/*, { useMemo, useRef, useEffect } */ from 'react';
 import { Canvas/*, useFrame*/ } from '@react-three/fiber'
@@ -19,10 +21,11 @@ import './App.css'
 
 // input weave array
 const basicWeave2DArray: number[][] = [
-  [1, 0, 1, 0],
-  [0, 1, 0, 1],
-  [1, 0, 1, 0],
-  [0, 1, 0, 1]
+  [1, 0, 1, 0, 1],
+  [0, 1, 0, 1, 0],
+  [1, 0, 1, 0, 1],
+  [0, 1, 0, 1, 0],
+  [1, 0, 1, 0, 1]
 ];
 
 // * wefts functions *
@@ -30,30 +33,42 @@ type WeftProps = {
   weaveArray: number[][];
   zPosition: number;
   color: string;
+  thickness: number;
+  warpSpacing: number;
 }
 // creates 1 weft
-const Weft: React.FC<WeftProps> = ({ weaveArray, zPosition, color }) => {
-  const xPosition = ((weaveArray[0].length) + 0.2) / 2;
+const Weft: React.FC<WeftProps> = ({ weaveArray, zPosition, color, thickness, warpSpacing }) => {
+  const numWarps = weaveArray[0].length;
+  const startPosition = numWarps % 2 === 0
+    ? (-1 * ((numWarps - 1) * (warpSpacing / 2)))
+    : (-1 * (Math.floor(numWarps / 2) * warpSpacing));
   const weftCurve = React.useMemo(() => {
     return new THREE.CatmullRomCurve3([
-      new THREE.Vector3((-1 * (xPosition)), 0, zPosition),
-      new THREE.Vector3(xPosition, 0, zPosition)
+      new THREE.Vector3(startPosition - 0.6, 0, zPosition),   // offsetting with extra noodle
+      new THREE.Vector3((startPosition + (numWarps - 1) * warpSpacing) + 0.6, 0, zPosition)
     ]);
-  }, [zPosition]);    // renders weftcurve only if zPosition changes
+  }, [weaveArray, zPosition, warpSpacing]);    // renders weftcurve only if zPosition changes
   return (
     <mesh>
-      <tubeGeometry args={[weftCurve, 64, 0.1, 20, false]} />
-      <meshStandardMaterial color={color} />
+      <tubeGeometry args={[weftCurve, 64, thickness, 15, false]} />
+      <meshPhysicalMaterial
+        color={color}
+        roughness={0.9}
+        clearcoat={0.1}
+        clearcoatRoughness={0.7}
+      />
     </mesh>
   );
 };
 type WeftsProps = {
   weaveArray: number[][];
   color: string;
+  thickness: number;
   spacing: number;
+  warpSpacing: number;
 }
 // creates a grouping of wefts
-const Wefts: React.FC<WeftsProps> = ({ weaveArray, color, spacing }) => {
+const Wefts: React.FC<WeftsProps> = ({ weaveArray, color, thickness, spacing, warpSpacing }) => {
   const numWefts = weaveArray.length;
   const startPosition = numWefts % 2 === 0
     ? (-1 * ((numWefts - 1) * (spacing / 2)))
@@ -61,12 +76,14 @@ const Wefts: React.FC<WeftsProps> = ({ weaveArray, color, spacing }) => {
   return (
     <>
       {Array.from({ length: numWefts }, (_, index) => {
-        const zPosition = startPosition + index * spacing;
+        const zPosition = startPosition + index * spacing;    // alters next weft based on spacing
         return <Weft
           key={index}
           weaveArray={weaveArray}
           zPosition={zPosition}
           color={color}
+          thickness={thickness}
+          warpSpacing={warpSpacing}
         />
       })}
     </>
@@ -79,101 +96,128 @@ type WarpProps = {
   warpRow: number[];
   xPosition: number;
   color: string;
+  warpThickness: number;
+  weftThickness: number
+  weftSpacing: number;
 }
 // creates 1 weft
-const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color }) => {   // TODO NEEDS A VARIABLE X POS  
+const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warpThickness, weftThickness, weftSpacing }) => {
   const warpCurve = React.useMemo(() => {
     let warpArrayPoints = [];
     const numWefts = weaveArray.length;     // determing the start z position
     const startPosition = numWefts % 2 === 0
-      ? (-1 * ((numWefts - 1) / 2/* * (spacing / 2)*/))
-      : (-1 * ((Math.floor(numWefts / 2))/* * spacing*/));
+      ? (-1 * ((numWefts - 1) * (weftSpacing / 2)))
+      : (-1 * (Math.floor(numWefts / 2)) * weftSpacing);
     // 1st warp point outside weft
-    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition - 0.6));
+    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition - 0.6));   // offsetting with extra noodle
     for (let i = 0; i < warpRow.length; i++) {
-      const yPosition = warpRow[i] === 1 ? 0.2 : -0.2;
-      warpArrayPoints.push(new THREE.Vector3(xPosition, yPosition, startPosition + i));
+      const yPosition = warpRow[i] === 1 ? (weftThickness + warpThickness) : (-1 * (weftThickness) - warpThickness);
+      warpArrayPoints.push(new THREE.Vector3(xPosition, yPosition, startPosition + i * weftSpacing));
     }
     // last warp point outside of the warp
-    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition + (warpRow.length - 1) + 0.6));
+    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition + (warpRow.length - 1) * weftSpacing + 0.6));
     return new THREE.CatmullRomCurve3(warpArrayPoints);
-  }, [warpRow]);
+  }, [weaveArray, warpRow, xPosition, weftSpacing]);
   return (
     <mesh>
-      <tubeGeometry args={[warpCurve, 64, 0.1, 20, false]} />
-      <meshStandardMaterial color={color} />
+      <tubeGeometry args={[warpCurve, 64, warpThickness, 20, false]} />
+      <meshPhysicalMaterial
+        color={color}
+        roughness={0.9}
+        clearcoat={0.1}
+        clearcoatRoughness={0.7}
+      />
     </mesh>
   );
 };
 type WarpsProps = {
   weaveArray: number[][];
   color: string;
-  spacing: number;
+  warpThickness: number;
+  weftThickness: number;
+  warpspacing: number;
+  weftSpacing: number;
 }
 // creates a grouping of wefts
-const Warps: React.FC<WarpsProps> = ({ weaveArray, color, spacing }) => {
+const Warps: React.FC<WarpsProps> = ({ weaveArray, color, warpThickness, warpspacing, weftThickness, weftSpacing }) => {
   const transposedArray = weaveArray[0].map((_, colIndex) => weaveArray.map(row => row[colIndex]));
   const numWarps = weaveArray[0].length;
   const startPosition = numWarps % 2 === 0
-    ? (-1 * ((numWarps - 1) / 2 * (spacing / 2)))
-    : (-1 * ((Math.floor(numWarps / 2)) * spacing));
+    ? (-1 * ((numWarps - 1) * (warpspacing / 2)))
+    : (-1 * ((Math.floor(numWarps / 2)) * warpspacing));
   return (
     <>
       {Array.from({ length: transposedArray.length }, (_, index) => {
         const row = transposedArray[index];
-        const xPosition = startPosition + index * spacing;
+        const xPosition = startPosition + index * warpspacing;    // alters next warp based on spacing
         return <Warp
           key={index}
           weaveArray={basicWeave2DArray}
           xPosition={xPosition}
           warpRow={row}
           color={color}
+          weftThickness={weftThickness}
+          warpThickness={warpThickness}
+          weftSpacing={weftSpacing}
         />
       })}
     </>
   );
 };
-// // continuously renders the warp grouping
-// const ChangingWarps: React.FC = () => {
-//   const { color, spacing } = useControls({    // creating slider for spacing
-//     color: '#0000F0',
-//     spacing: {
-//       value: 1.0,
-//       min: 0.0,
-//       max: 5.0,
-//       step: 0.1
-//     }
-//   });
-//   return (      // returning the weft grouping
-//     <Warps
-//       weaveArray={basicWeave2DArray}
-//       color={color}
-//       spacing={spacing}
-//     />
-//   );
-// };
 
-// continuously renders the weft and warp grouping together
+// * re-rendering weave *
 const ChangingWeave: React.FC = () => {
-  const { color, spacing } = useControls({    // creating slider for spacing
-    color: '#0000FF',
-    spacing: {
-      value: 1.0,
-      min: 0.0,
-      max: 5.0,
-      step: 0.1
-    }
-  });
-  return (      // returning the weft grouping
-    <Wefts
+  const {
+    weft_color,
+    weft_spacing,
+    weft_thickness,
+    warp_color,
+    warp_spacing,
+    warp_thickness } = useControls({    // creating sliders
+      weft_color: '#1D6CED',
+      weft_spacing: {
+        value: 1.0,
+        min: 0.0,
+        max: 5.0,
+        step: 0.1
+      },
+      weft_thickness: {
+        value: 0.1,
+        min: 0.01,
+        max: 0.8,
+        step: 0.01
+      },
+      warp_color: '#7CAAF4',
+      warp_spacing: {
+        value: 1.0,
+        min: 0.0,
+        max: 5.0,
+        step: 0.1
+      },
+      warp_thickness: {
+        value: 0.1,
+        min: 0.01,
+        max: 0.8,
+        step: 0.01
+      }
+    });
+  return (      // returning the weft and warp grouping
+    <><Wefts
       weaveArray={basicWeave2DArray}
-      color={color}
-      spacing={spacing}
-    />
+      color={weft_color}
+      thickness={weft_thickness}
+      spacing={weft_spacing}
+      warpSpacing={warp_spacing} />
+      <Warps
+        weaveArray={basicWeave2DArray}
+        color={warp_color}
+        warpThickness={warp_thickness}
+        weftThickness={weft_thickness}
+        warpspacing={warp_spacing}
+        weftSpacing={weft_spacing} />
+    </>
   );
 };
-
-
 
 // * app running in main *
 function App() {
@@ -202,16 +246,16 @@ function App() {
           position={[0, -0.9, 0]} />
         <axesHelper args={[10]} />
 
-        {/* continuously rendering weft grouping */}
+        {/* continuously rendering weave */}
         <ChangingWeave />
 
-        {/* <ChangingWarps /> */}
-
-        {/* <Warps weaveArray={basicWeave2DArray} color={'#00FF00'} /> */}
-
-
         {/* lights */}
-        <ambientLight intensity={0.5} color={'white'} />
+        <ambientLight intensity={0.7} color={'white'} />
+        <directionalLight
+          color={"white"}
+          intensity={0.6}
+          position={[25, 25, 0]}
+        />
 
       </Canvas>
     </div>
