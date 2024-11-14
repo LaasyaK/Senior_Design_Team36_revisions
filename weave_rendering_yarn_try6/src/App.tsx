@@ -2,7 +2,7 @@
 // add buttons to tile to match the theme of the layout that control variable functions
 //    add a button to toggle grid
 //    toggle gizmo cube (and make it smaller)
-// take in 4 layer weave pattern and create 4 layer viz
+// color code each layer and differnt shades for the weft and warp
 
 import React/*, { useMemo, useRef, useEffect } */ from 'react';
 import { Canvas/*, useFrame*/ } from '@react-three/fiber'
@@ -40,8 +40,6 @@ const basicWeave2DArray: number[][] = [
   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 // F C1 C2  B
-
-
 
 // * wefts functions *
 type WeftProps = {
@@ -133,9 +131,10 @@ type WarpProps = {
   warpThickness: number;
   weftThickness: number
   weftSpacing: number;
+  layer: number;
 }
 // creates 1 weft
-const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warpThickness, weftThickness, weftSpacing }) => {
+const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warpThickness, weftThickness, weftSpacing, layer }) => {
   const warpCurve = React.useMemo(() => {
     let warpArrayPoints = [];
     const numWefts = weaveArray.length;     // determing the start z position
@@ -143,18 +142,18 @@ const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warp
       ? (-1 * ((numWefts - 1) * (weftSpacing / 2)))
       : (-1 * (Math.floor(numWefts / 2)) * weftSpacing);
     // 1st 2 warp point outside weft
-    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition - (1.6 * (warpThickness + weftThickness))));
-    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition - (1.4 * (warpThickness + weftThickness))));
-    for (let i = 0; i < warpRow.length; i++) {
-      const layer = i % 4;
+    warpArrayPoints.push(new THREE.Vector3(xPosition, layer, startPosition - (1.6 * (warpThickness + weftThickness))));
+    warpArrayPoints.push(new THREE.Vector3(xPosition, layer, startPosition - (1.4 * (warpThickness + weftThickness))));
+    for (let i = layer; i < warpRow.length; i = i + 4) {
       const yPosition = warpRow[i] === 1
         ? ((weftThickness + warpThickness) + layer)
         : ((-1 * (weftThickness) - warpThickness) + layer);
+      console.log("layer: " + layer + " array value: " + warpRow[i]);
       warpArrayPoints.push(new THREE.Vector3(xPosition, yPosition, startPosition + i * weftSpacing));
     }
     // last 2 warp point outside of the warp
-    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition + (warpRow.length - 1) * weftSpacing + (1.4 * (warpThickness + weftThickness))));
-    warpArrayPoints.push(new THREE.Vector3(xPosition, 0, startPosition + (warpRow.length - 1) * weftSpacing + (1.6 * (warpThickness + weftThickness))));
+    warpArrayPoints.push(new THREE.Vector3(xPosition, layer, startPosition + (warpRow.length - 1) * weftSpacing + (1.4 * (warpThickness + weftThickness))));
+    warpArrayPoints.push(new THREE.Vector3(xPosition, layer, startPosition + (warpRow.length - 1) * weftSpacing + (1.6 * (warpThickness + weftThickness))));
     return new THREE.CatmullRomCurve3(warpArrayPoints);
   }, [weaveArray, warpRow, xPosition, warpThickness, weftThickness, weftSpacing]);
   const startPoint = warpCurve.getPoint(0);
@@ -203,6 +202,7 @@ const Warps: React.FC<WarpsProps> = ({ weaveArray, color, warpThickness, warpspa
       {Array.from({ length: transposedArray.length }, (_, index) => {
         const row = transposedArray[index];
         const xPosition = startPosition + index * warpspacing;    // alters next warp based on spacing
+        const layer = 3 - (index % 4);
         return <Warp
           key={index}
           weaveArray={basicWeave2DArray}
@@ -212,6 +212,7 @@ const Warps: React.FC<WarpsProps> = ({ weaveArray, color, warpThickness, warpspa
           weftThickness={weftThickness}
           warpThickness={warpThickness}
           weftSpacing={weftSpacing}
+          layer={layer}
         />
       })}
     </>
@@ -229,7 +230,7 @@ const ChangingWeave: React.FC = () => {
     warp_thickness } = useControls({    // creating sliders
       weft_color: '#1D6CED',
       weft_spacing: {
-        value: 1.0,
+        value: 0.1,
         min: 0.0,
         max: 5.0,
         step: 0.1
@@ -242,7 +243,7 @@ const ChangingWeave: React.FC = () => {
       },
       warp_color: '#7CAAF4',
       warp_spacing: {
-        value: 1.0,
+        value: 0.1,
         min: 0.0,
         max: 5.0,
         step: 0.1
