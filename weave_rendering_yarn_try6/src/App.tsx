@@ -1,20 +1,36 @@
-// * Notes *
-// add better limits to the spacing of the weft and warp so can't go too small [I say not important yet]
-// add buttons to tile to match the theme of the layout that control variable functions [*]
-// color based on theme of app from index.css theme colors in hsl [*]
+// * Notes for future *
+//    calculate limits so program prevents spacing being too small and tubes intersect
+//    button to change views (ex: orthographic, isometric)
+//    change orbit controls to not use right-click
+
+// * Present To Do *
+//    add buttons to tile to match the theme of the layout that control variable functions [*]
+//    color based on theme of app from index.css theme colors in hsl [*]
 //    can only use hsl in strings in the html tag code, not in the ts code
-// include side by side views of all layer, toggle w/ button [*]
-
-// * PROGRESS *
-//    fixed 1 and 4 layers
-//    need to make 2 layers happen
-
-
 // next week: 
 //    buttons on canvs hardcoded
 //    use weave struct data and carmella's algorithm to create viz (layer input in the viz tile)
 //    color scheme the weft and warp for each layer
 // -  use real theme to adapt theme of viz to app's theme (use realTheme to determine if 'light' or 'dark' to set a light or dark color)
+
+// * PROGRESS *
+//    need to make color coding
+//    cant get the conditional dropboxes to work
+
+// * Buttons on tile *
+// show raw weave design or render
+//    render 1 or 2 loops
+// number of layers
+// weft spacing
+// weft thickness
+// warp spacing
+// warp thickness
+// grid toggle
+// connect weft to show how the loops would look
+// hide all buttons
+// hide the gizmo
+// mouse intructions
+// maybeee can change colors (may want them to be default)
 
 //  WHEN COPYING OVER TO lOOM3D FILES DONT COPY AND PASTE THE WHOLE DOC
 
@@ -62,6 +78,9 @@ const basicWeave2DArray: boolean[][] = [
   [false, false, false, true]
 ];
 
+// TEST to hold points to be used for connecting wefts
+// let weftsStartEndPoints: THREE.Vector3[][];
+
 // * wefts functions *
 type WeftProps = {
   weaveArray: boolean[][];
@@ -86,6 +105,8 @@ const Weft: React.FC<WeftProps> = ({ weaveArray, yPosition, zPosition, color, th
   // get start and end end of the path for circles
   const startPoint = weftCurve.getPoint(0);
   const endPoint = weftCurve.getPoint(1);
+  // const weftStartEndPoints: THREE.Vector3[] = [startPoint, endPoint];     // TEST to store each start and end points to put in global var
+  // weftsStartEndPoints.push(weftStartEndPoints);
   return (
     <>
       {/* warp noodle */}
@@ -110,39 +131,56 @@ const Weft: React.FC<WeftProps> = ({ weaveArray, yPosition, zPosition, color, th
     </>
   );
 };
+
 type WeftsProps = {
   weaveArray: boolean[][];
-  color: string;
+  // color: string;
   thickness: number;
   weftSpacing: number;
   warpSpacing: number;
   numOfLayers: number;
 }
+
 // creates a grouping of wefts
-const Wefts: React.FC<WeftsProps> = ({ weaveArray, color, thickness, weftSpacing, warpSpacing, numOfLayers }) => {
+const Wefts: React.FC<WeftsProps> = ({ weaveArray, /*color,*/ thickness, weftSpacing, warpSpacing, numOfLayers }) => {
   const numWefts = weaveArray.length;
   const startPosition = numWefts % 2 === 0
     ? (-1 * ((numWefts - 1) * (weftSpacing / 2)))
     : (-1 * ((Math.floor(numWefts / 2)) * weftSpacing));
+
+  // tub geo between start of layer 12 and 34 and end of 12 and 34
   return (
     <>
       {Array.from({ length: numWefts }, (_, index) => {
         const zPosition = startPosition + index * weftSpacing;    // alters next weft based on spacing
         const yPosition =
           numOfLayers === 1 ? 0 :
-            numOfLayers === 2 ? Math.floor(index / 2) % 2 :
+            numOfLayers === 2 ? index % 4 :
               numOfLayers === 4 ? index % 4 :
                 0;
+        let weftColor;
+        if (numOfLayers === 1) {
+          weftColor = "#70C1FF";
+        }
+        else {
+          weftColor =
+            index % 4 === 0 ? "#FF8591" :
+              index % 4 === 1 ? "#9585FF" :
+                index % 4 === 2 ? "#F9B577" :
+                  index % 4 === 3 ? "#70C1FF" :
+                    "#808080";
+        }
         return <Weft
           key={index}
           weaveArray={weaveArray}
           yPosition={yPosition}
           zPosition={zPosition}
-          color={color}
+          color={weftColor}
           thickness={thickness}
           warpSpacing={warpSpacing}
         />
       })}
+      {/* if show loops, tubeGeometry a curve b/w start */}
     </>
   );
 };
@@ -159,6 +197,7 @@ type WarpProps = {
   layer: number;
   numOfLayers: number;
 }
+
 // creates 1 weft
 const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warpThickness, weftThickness, weftSpacing, layer, numOfLayers }) => {
   const warpCurve = React.useMemo(() => {
@@ -185,6 +224,7 @@ const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warp
     // last 2 warp point outside of the warp
     warpArrayPoints.push(new THREE.Vector3(xPosition, layer, startPosition + (warpRow.length - 1) * weftSpacing + (1.4 * (warpThickness + weftThickness))));
     warpArrayPoints.push(new THREE.Vector3(xPosition, layer, startPosition + (warpRow.length - 1) * weftSpacing + (1.6 * (warpThickness + weftThickness))));
+
     return new THREE.CatmullRomCurve3(warpArrayPoints);
   }, [weaveArray, warpRow, xPosition, warpThickness, weftThickness, weftSpacing, layer, numOfLayers]);
   const startPoint = warpCurve.getPoint(0);
@@ -213,17 +253,19 @@ const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warp
     </>
   );
 };
+
 type WarpsProps = {
   weaveArray: boolean[][];
-  color: string;
+  // color: string;
   warpThickness: number;
   weftThickness: number;
   warpspacing: number;
   weftSpacing: number;
   numOfLayers: number;
 }
+
 // creates a grouping of wefts
-const Warps: React.FC<WarpsProps> = ({ weaveArray, color, warpThickness, warpspacing, weftThickness, weftSpacing, numOfLayers }) => {
+const Warps: React.FC<WarpsProps> = ({ weaveArray, /*color,*/ warpThickness, warpspacing, weftThickness, weftSpacing, numOfLayers }) => {
   const transposedArray = weaveArray[0].map((_, colIndex) => weaveArray.map(row => row[colIndex]));
   const numWarps = weaveArray[0].length;
   const startPosition = numWarps % 2 === 0
@@ -236,16 +278,27 @@ const Warps: React.FC<WarpsProps> = ({ weaveArray, color, warpThickness, warpspa
         const xPosition = startPosition + index * warpspacing;    // alters next warp based on spacing
         const layer =
           numOfLayers === 1 ? 0 :
-            numOfLayers === 2 ? 1 - (index % 2) :
-              numOfLayers === 3 ? 0 :
-                numOfLayers === 4 ? 3 - (index % 4) :
-                  index;
+            numOfLayers === 2 ? 3 - (index % 4) :
+              numOfLayers === 4 ? 3 - (index % 4) :
+                0;
+        let warpColor;
+        if (numOfLayers === 1) {
+          warpColor = "#0068B8";
+        }
+        else {
+          warpColor =
+            index % 4 === 3 ? "#B80012" :
+              index % 4 === 2 ? "#3D1FFF" :
+                index % 4 === 1 ? "#C46308" :
+                  index % 4 === 0 ? "#0068B8" :
+                    "#808080";
+        }
         return <Warp
           key={index}
           weaveArray={weaveArray}
           xPosition={xPosition}
           warpRow={row}
-          color={color}
+          color={warpColor}
           weftThickness={weftThickness}
           warpThickness={warpThickness}
           weftSpacing={weftSpacing}
@@ -258,33 +311,37 @@ const Warps: React.FC<WarpsProps> = ({ weaveArray, color, warpThickness, warpspa
 };
 
 // * re-rendering weave *
-const ChangingWeave: React.FC = () => {
+const TitleControls: React.FC = () => {
   const {
+    show,
     number_of_layers,
-    weft_color,
+    show_loops,
+    show_navigation_cube,
     weft_spacing,
     weft_thickness,
-    warp_color,
     warp_spacing,
-    warp_thickness } = useControls({    // creating sliders
-      number_of_layers: { value: 4, min: 1, max: 4, step: 1 },
-      weft_color: '#1D6CED',
+    warp_thickness } = useControls({    // creating controls
+      show: { value: "Raw Weave Design", options: ["Raw Weave Design", "Layered Loops"] },
+      number_of_layers: { value: 4, options: [1, 2, 4] },
+      show_loops: { value: false },
+      show_navigation_cube: { value: true },
       weft_spacing: { value: 0.2, min: 0.0, max: 3.0, step: 0.01 },
       weft_thickness: { value: 0.1, min: 0.01, max: 0.6, step: 0.01 },
-      warp_color: '#7CAAF4',
       warp_spacing: { value: 0.2, min: 0.0, max: 3.0, step: 0.01 },
-      warp_thickness: { value: 0.1, min: 0.01, max: 0.6, step: 0.01 }
+      warp_thickness: { value: 0.1, min: 0.01, max: 0.6, step: 0.01 },
+      // ...(show === "Layered Loops" && {
+      //   layer_num: { value: 4, options: [2, 4] }, // Only adds this control if "Layered Loops" is selected
+      // }),
     });
+  // const { layer_num } = useControls(
+  //   show === "Layered Loops" ? { layer_num: { value: 4, options: [2, 4] } } : {}
+  // );
   // determining weave design based on num of layers to render
   const inputWeave = React.useMemo(() => {
     if (number_of_layers == 1) {
       return basicWeave2DArray;
     }
-    else if (number_of_layers == 2) {
-      const bothWeaves = generateNewGrid(basicWeave2DArray);
-      return bothWeaves.newGrid;
-    }
-    else if (number_of_layers == 4) {
+    else if (number_of_layers == 2 || number_of_layers == 4) {
       const bothWeaves = generateNewGrid(basicWeave2DArray);
       return bothWeaves.newGrid;
     }
@@ -294,16 +351,19 @@ const ChangingWeave: React.FC = () => {
   }, [number_of_layers]);
   return (      // returning the weft and warp grouping
     <>
+      {show_navigation_cube && (
+        <GizmoHelper alignment="top-left" margin={[50, 50]} >
+          <GizmoViewport />
+        </GizmoHelper>
+      )}
       <Wefts
         weaveArray={inputWeave}
-        color={weft_color}
         thickness={weft_thickness}
         weftSpacing={weft_spacing}
         warpSpacing={warp_spacing}
         numOfLayers={number_of_layers} />
       <Warps
         weaveArray={inputWeave}
-        color={warp_color}
         warpThickness={warp_thickness}
         weftThickness={weft_thickness}
         warpspacing={warp_spacing}
@@ -325,6 +385,11 @@ function App() {
   renderingPlaneColor = "#FFFFFF";
   renderingGridColor = "#FFFFFF";
   renderingLightIntensity = 2;
+
+  const { grid } = useControls({      // creates GUI to toggle showing grid
+    grid: { value: true }
+  });
+
   return (
     <div id="canvas-container">
 
@@ -340,16 +405,17 @@ function App() {
         <Plane args={[20, 20]} rotation-x={-Math.PI * 0.5} position-y={-1.05}>
           <meshBasicMaterial color={renderingPlaneColor} />
         </Plane>
-        <GizmoHelper alignment="top-left" margin={[50, 50]} >
-          <GizmoViewport />
-        </GizmoHelper>
-        <primitive
-          object={new THREE.GridHelper(20, 20, renderingGridColor, renderingGridColor)}
-          position={[0, -1, 0]} />
         <axesHelper args={[10]} />
 
-        {/* continuously rendering weave */}
-        <ChangingWeave />
+        {/* grid */}
+        {grid && (
+          <primitive
+            object={new THREE.GridHelper(20, 20, renderingGridColor, renderingGridColor)}
+            position={[0, -1, 0]}
+          />)}
+
+        {/* controls for tile and weave */}
+        <TitleControls />
 
         {/* lights */}
         <ambientLight intensity={(renderingLightIntensity - 0.3)} color={'white'} />
