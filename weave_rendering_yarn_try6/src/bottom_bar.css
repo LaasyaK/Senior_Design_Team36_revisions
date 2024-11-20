@@ -1,0 +1,11 @@
+body {
+      margin: 0;
+      overflow: hidden;
+}
+
+#bar-container {
+      width: 100vw;
+      height: 100vh;
+      /* later pull from default colors */
+      background-color: #808080;
+}

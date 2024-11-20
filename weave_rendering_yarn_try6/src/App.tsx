@@ -14,8 +14,8 @@
 // -  use real theme to adapt theme of viz to app's theme (use realTheme to determine if 'light' or 'dark' to set a light or dark color)
 
 // * PROGRESS *
-//    need to make color coding
 //    cant get the conditional dropboxes to work
+//    got weft start and end points to save to an array but wont update when wefts re-renders
 
 // * Buttons on tile *
 // show raw weave design or render
@@ -78,9 +78,6 @@ const basicWeave2DArray: boolean[][] = [
   [false, false, false, true]
 ];
 
-// TEST to hold points to be used for connecting wefts
-// let weftsStartEndPoints: THREE.Vector3[][];
-
 // * wefts functions *
 type WeftProps = {
   weaveArray: boolean[][];
@@ -91,7 +88,7 @@ type WeftProps = {
   warpSpacing: number;
 }
 // creates 1 weft
-const Weft: React.FC<WeftProps> = ({ weaveArray, yPosition, zPosition, color, thickness, warpSpacing }) => {
+const Weft: React.FC<WeftProps & { pointsRef: React.MutableRefObject<THREE.Vector3[][]> }> = ({ weaveArray, yPosition, zPosition, color, thickness, warpSpacing, pointsRef }) => {
   const numWarps = weaveArray[0].length;
   const startPosition = numWarps % 2 === 0
     ? (-1 * ((numWarps - 1) * (warpSpacing / 2)))
@@ -102,11 +99,14 @@ const Weft: React.FC<WeftProps> = ({ weaveArray, yPosition, zPosition, color, th
       new THREE.Vector3((startPosition + (numWarps - 1) * warpSpacing) + 0.6, yPosition, zPosition)
     ]);
   }, [weaveArray, yPosition, zPosition, warpSpacing]);    // renders weftcurve when these change
-  // get start and end end of the path for circles
+  // get start and end end of the path for circles and push into array
   const startPoint = weftCurve.getPoint(0);
   const endPoint = weftCurve.getPoint(1);
-  // const weftStartEndPoints: THREE.Vector3[] = [startPoint, endPoint];     // TEST to store each start and end points to put in global var
-  // weftsStartEndPoints.push(weftStartEndPoints);
+
+  React.useEffect(() => {
+    pointsRef.current.push([startPoint, endPoint]);
+  }, [weaveArray, yPosition, zPosition, thickness, warpSpacing, pointsRef, startPoint, endPoint]);
+
   return (
     <>
       {/* warp noodle */}
@@ -134,21 +134,26 @@ const Weft: React.FC<WeftProps> = ({ weaveArray, yPosition, zPosition, color, th
 
 type WeftsProps = {
   weaveArray: boolean[][];
-  // color: string;
   thickness: number;
   weftSpacing: number;
   warpSpacing: number;
   numOfLayers: number;
 }
-
 // creates a grouping of wefts
-const Wefts: React.FC<WeftsProps> = ({ weaveArray, /*color,*/ thickness, weftSpacing, warpSpacing, numOfLayers }) => {
+const Wefts: React.FC<WeftsProps> = ({ weaveArray, thickness, weftSpacing, warpSpacing, numOfLayers }) => {
   const numWefts = weaveArray.length;
   const startPosition = numWefts % 2 === 0
     ? (-1 * ((numWefts - 1) * (weftSpacing / 2)))
     : (-1 * ((Math.floor(numWefts / 2)) * weftSpacing));
+  // emptying array of points ref
+  const pointsRef = React.useRef<THREE.Vector3[][]>([]);
+  pointsRef.current = [];
 
-  // tub geo between start of layer 12 and 34 and end of 12 and 34
+  // TEST
+  React.useEffect(() => {
+    console.log("Collected points:", pointsRef);
+  }, []);
+
   return (
     <>
       {Array.from({ length: numWefts }, (_, index) => {
@@ -170,6 +175,14 @@ const Wefts: React.FC<WeftsProps> = ({ weaveArray, /*color,*/ thickness, weftSpa
                   index % 4 === 3 ? "#70C1FF" :
                     "#808080";
         }
+        // this needs to run every other index (even indexes)
+        // if (index % 2 == 0) {
+        // const mid = pointsRef[index][1].clone().add(pointsRef[index + 1][1]).multiplyScalar(0.5).add(new THREE.Vector3())
+        // const curve = new THREE.CatmullRomCurve3([pointsRef[index][1], pointsRef[index + 1][1]]);
+        // }
+        // pointsRef[index][1] to get end point of 1st weft and pointsRef[index+1][1] make a curve out of it
+        // create a mid point and add to curve 
+        // with curve make a tubegeometry
         return <Weft
           key={index}
           weaveArray={weaveArray}
@@ -178,9 +191,9 @@ const Wefts: React.FC<WeftsProps> = ({ weaveArray, /*color,*/ thickness, weftSpa
           color={weftColor}
           thickness={thickness}
           warpSpacing={warpSpacing}
+          pointsRef={pointsRef}
         />
       })}
-      {/* if show loops, tubeGeometry a curve b/w start */}
     </>
   );
 };
@@ -197,7 +210,6 @@ type WarpProps = {
   layer: number;
   numOfLayers: number;
 }
-
 // creates 1 weft
 const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warpThickness, weftThickness, weftSpacing, layer, numOfLayers }) => {
   const warpCurve = React.useMemo(() => {
@@ -224,7 +236,6 @@ const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warp
     // last 2 warp point outside of the warp
     warpArrayPoints.push(new THREE.Vector3(xPosition, layer, startPosition + (warpRow.length - 1) * weftSpacing + (1.4 * (warpThickness + weftThickness))));
     warpArrayPoints.push(new THREE.Vector3(xPosition, layer, startPosition + (warpRow.length - 1) * weftSpacing + (1.6 * (warpThickness + weftThickness))));
-
     return new THREE.CatmullRomCurve3(warpArrayPoints);
   }, [weaveArray, warpRow, xPosition, warpThickness, weftThickness, weftSpacing, layer, numOfLayers]);
   const startPoint = warpCurve.getPoint(0);
@@ -256,16 +267,14 @@ const Warp: React.FC<WarpProps> = ({ weaveArray, warpRow, xPosition, color, warp
 
 type WarpsProps = {
   weaveArray: boolean[][];
-  // color: string;
   warpThickness: number;
   weftThickness: number;
   warpspacing: number;
   weftSpacing: number;
   numOfLayers: number;
 }
-
 // creates a grouping of wefts
-const Warps: React.FC<WarpsProps> = ({ weaveArray, /*color,*/ warpThickness, warpspacing, weftThickness, weftSpacing, numOfLayers }) => {
+const Warps: React.FC<WarpsProps> = ({ weaveArray, warpThickness, warpspacing, weftThickness, weftSpacing, numOfLayers }) => {
   const transposedArray = weaveArray[0].map((_, colIndex) => weaveArray.map(row => row[colIndex]));
   const numWarps = weaveArray[0].length;
   const startPosition = numWarps % 2 === 0
@@ -314,28 +323,25 @@ const Warps: React.FC<WarpsProps> = ({ weaveArray, /*color,*/ warpThickness, war
 const TitleControls: React.FC = () => {
   const {
     show,
-    number_of_layers,
     show_loops,
     show_navigation_cube,
     weft_spacing,
     weft_thickness,
     warp_spacing,
     warp_thickness } = useControls({    // creating controls
-      show: { value: "Raw Weave Design", options: ["Raw Weave Design", "Layered Loops"] },
-      number_of_layers: { value: 4, options: [1, 2, 4] },
+      show: { value: "Raw Weave Design", options: ["Raw Weave Design", "1 Layered Loop", "2 Layered Loops"] },
       show_loops: { value: false },
       show_navigation_cube: { value: true },
       weft_spacing: { value: 0.2, min: 0.0, max: 3.0, step: 0.01 },
       weft_thickness: { value: 0.1, min: 0.01, max: 0.6, step: 0.01 },
       warp_spacing: { value: 0.2, min: 0.0, max: 3.0, step: 0.01 },
       warp_thickness: { value: 0.1, min: 0.01, max: 0.6, step: 0.01 },
-      // ...(show === "Layered Loops" && {
-      //   layer_num: { value: 4, options: [2, 4] }, // Only adds this control if "Layered Loops" is selected
-      // }),
     });
-  // const { layer_num } = useControls(
-  //   show === "Layered Loops" ? { layer_num: { value: 4, options: [2, 4] } } : {}
-  // );
+  const number_of_layers =
+    (show === "Raw Weave Design") ? 1 :
+      (show === "1 Layered Loop") ? 2 :
+        (show === "2 Layered Loops") ? 4 :
+          1;
   // determining weave design based on num of layers to render
   const inputWeave = React.useMemo(() => {
     if (number_of_layers == 1) {
@@ -349,6 +355,7 @@ const TitleControls: React.FC = () => {
       return basicWeave2DArray;
     }
   }, [number_of_layers]);
+
   return (      // returning the weft and warp grouping
     <>
       {show_navigation_cube && (
@@ -386,6 +393,12 @@ function App() {
   renderingGridColor = "#FFFFFF";
   renderingLightIntensity = 2;
 
+  // function handleButtonClick(event: React.MouseEvent<HTMLButtonElement>) {
+  //   const button = event.target as HTMLButtonElement;  // Type assertion
+  //   const buttonName = button.innerText;
+  //   console.log(`${buttonName} clicked!`);
+  // }
+
   const { grid } = useControls({      // creates GUI to toggle showing grid
     grid: { value: true }
   });
@@ -393,7 +406,7 @@ function App() {
   return (
     <div id="canvas-container">
 
-      {/* background canvas */}
+      {/* rendering background canvas */}
       <Canvas
         style={{ backgroundColor: renderingBackgroundColor }}
         camera={{ position: [2, 2, 2] }}
@@ -422,7 +435,14 @@ function App() {
         <directionalLight color={'white'} intensity={renderingLightIntensity} position={[20, 20, 0]} />
       </Canvas>
 
+      {/* Button Container */}
+      {/* <div id="button-bar-container">
+        <button onClick={handleButtonClick}>Button 1</button>
+        <button onClick={handleButtonClick}>Button 2</button>
+        <button onClick={handleButtonClick}>Button 3</button>
+      </div> */}
     </div>
+
   ) // --- return end
 } // --- app function end
 
