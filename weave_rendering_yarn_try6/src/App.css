@@ -8,24 +8,27 @@ body {
   height: 100vh;
 }
 
-#button-bar-container {
+#floating-bar {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 1000; /* Ensures it is above the canvas */
+  bottom: 20px;
+  right: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 8px;
 }
 
-#button-bar-container button {
-  margin: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
+.toggle-item {
+  padding: 8px 16px;
+  border-radius: 4px;
+  background-color: #e2e8f0; /* Default light gray */
+  transition: background-color 0.3s ease;
   cursor: pointer;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
 }
 
-#button-bar-container button:hover {
-  background-color: #45a049;
+.toggle-item.selected {
+  background-color: #3b82f6; /* Blue for selected */
+  color: white;
 }

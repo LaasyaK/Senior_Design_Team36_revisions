@@ -49,6 +49,29 @@ import { useControls } from 'leva'
 import * as THREE from 'three'
 import './App.css'
 import { generateNewGrid } from './weave_design_algorithm'
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarTrigger,
+} from "./bottom_bar.tsx"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group"
+
+import {
+  Sidebar,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from "@/components/ui/sidebar"; // Update the import path based on your setup
+import { ChevronDown } from "lucide-react";
+
 
 
 // input weave array
@@ -403,6 +426,13 @@ function App() {
     grid: { value: true }
   });
 
+  // Toggle group state
+  const [selected, setSelected] = React.useState("a");
+  const handleToggleChange = (value: string) => {
+    setSelected(value);
+    console.log("Selected value:", value);
+  };
+
   return (
     <div id="canvas-container">
 
@@ -410,8 +440,7 @@ function App() {
       <Canvas
         style={{ backgroundColor: renderingBackgroundColor }}
         camera={{ position: [2, 2, 2] }}
-        resize={{ debounce: 0 }}
-      >
+        resize={{ debounce: 0 }} >
         <OrbitControls />
 
         {/* plane and helpers */}
@@ -424,8 +453,7 @@ function App() {
         {grid && (
           <primitive
             object={new THREE.GridHelper(20, 20, renderingGridColor, renderingGridColor)}
-            position={[0, -1, 0]}
-          />)}
+            position={[0, -1, 0]} />)}
 
         {/* controls for tile and weave */}
         <TitleControls />
@@ -435,15 +463,67 @@ function App() {
         <directionalLight color={'white'} intensity={renderingLightIntensity} position={[20, 20, 0]} />
       </Canvas>
 
-      {/* Button Container */}
-      {/* <div id="button-bar-container">
-        <button onClick={handleButtonClick}>Button 1</button>
-        <button onClick={handleButtonClick}>Button 2</button>
-        <button onClick={handleButtonClick}>Button 3</button>
-      </div> */}
+      {/* floating bar */}
+      <div id="floating-bar">
+        <ToggleGroup
+          type="single"
+          value={selected}
+          onValueChange={handleToggleChange}
+          aria-label="Select Option" >
+          <ToggleGroupItem
+            value="a"
+            className={`toggle-item ${selected === "a" ? "selected" : ""}`} >
+            A
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="b"
+            className={`toggle-item ${selected === "b" ? "selected" : ""}`} >
+            B
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="c"
+            className={`toggle-item ${selected === "c" ? "selected" : ""}`} >
+            C
+          </ToggleGroupItem>
+          <ToggleGroupItem value='d'>D</ToggleGroupItem>
+          <ToggleGroupItem value='d'>D</ToggleGroupItem>
+          <ToggleGroupItem value='d'>D</ToggleGroupItem>
+          <ToggleGroupItem value='d'>D</ToggleGroupItem>
+          <ToggleGroupItem value='d'>D</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+
+
+      {/* <Sidebar>
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton>
+                    Select Workspace
+                    <ChevronDown className="ml-auto" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[--radix-popper-anchor-width]">
+                  <DropdownMenuItem>
+                    <span>Acme Inc</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <span>Acme Corp.</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+      </Sidebar> */}
+
+
     </div>
 
   ) // --- return end
 } // --- app function end
 
-export default App
+export default App;
