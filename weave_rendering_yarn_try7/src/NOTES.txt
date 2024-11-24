@@ -1,0 +1,100 @@
+// * Notes for future *
+//    calculate limits so program prevents spacing being too small and tubes intersect
+//    button to change views (ex: orthographic, isometric)
+//    change orbit controls to not use right-click
+
+// * Present To Do *
+//    add buttons to tile to match the theme of the layout that control variable functions [*]
+//    color based on theme of app from index.css theme colors in hsl [*]
+//    can only use hsl in strings in the html tag code, not in the ts code
+// next week: 
+//    buttons on canvs hardcoded
+//    use weave struct data and carmella's algorithm to create viz (layer input in the viz tile)
+//    color scheme the weft and warp for each layer
+// -  use real theme to adapt theme of viz to app's theme (use realTheme to determine if 'light' or 'dark' to set a light or dark color)
+
+// * PROGRESS *
+//    cant get the conditional dropboxes to work
+//    got weft start and end points to save to an array but wont update when wefts re-renders
+
+// * Buttons on tile *
+// show raw weave design or render
+//    render 1 or 2 loops
+// number of layers
+// weft spacing
+// weft thickness
+// warp spacing
+// warp thickness
+// grid toggle
+// connect weft to show how the loops would look
+// hide all buttons
+// hide the gizmo
+// mouse intructions
+// maybeee can change colors (may want them to be default)
+
+//  WHEN COPYING OVER TO lOOM3D FILES DONT COPY AND PASTE THE WHOLE DOC
+
+
+
+// _______________________________________________________________________________________
+// *** POPOVER BUTTON WORKS TO PULL UP A MOCK UP MENU
+   //  <div
+   //    id="floating-toggle-group"
+   //    style={{
+   //      position: "absolute",
+   //      bottom: "20px",
+   //      left: "20px",
+   //      backgroundColor: "rgba(255, 255, 255, 0.9)",
+   //      padding: "10px",
+   //      borderRadius: "8px",
+   //      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+   //      display: "flex",
+   //      gap: "8px",
+   //    }}
+   //  >
+   //    <Popover>
+   //      <PopoverTrigger asChild>
+   //        <Button variant="outline">Open popover</Button>
+   //      </PopoverTrigger>
+   //      <PopoverContent className="w-80">
+   //        <div className="grid gap-4">
+   //          <div className="space-y-2">
+   //            <h4 className="font-medium leading-none">Dimensions</h4>
+   //            <p className="text-sm text-muted-foreground">
+   //              Set the dimensions for the layer.
+   //            </p>
+   //          </div>
+   //          <div className="grid gap-2">
+   //            <div className="grid grid-cols-3 items-center gap-4">
+   //              <Input
+   //                id="width"
+   //                defaultValue="100%"
+   //                className="col-span-2 h-8"
+   //              />
+   //            </div>
+   //            <div className="grid grid-cols-3 items-center gap-4">
+   //              <Input
+   //                id="maxWidth"
+   //                defaultValue="300px"
+   //                className="col-span-2 h-8"
+   //              />
+   //            </div>
+   //            <div className="grid grid-cols-3 items-center gap-4">
+   //              <Input
+   //                id="height"
+   //                defaultValue="25px"
+   //                className="col-span-2 h-8"
+   //              />
+   //            </div>
+   //            <div className="grid grid-cols-3 items-center gap-4">
+   //              <Input
+   //                id="maxHeight"
+   //                defaultValue="none"
+   //                className="col-span-2 h-8"
+   //              />
+   //            </div>
+   //          </div>
+   //        </div>
+   //      </PopoverContent>
+   //    </Popover>
+   //  </div>
