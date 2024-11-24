@@ -14,7 +14,8 @@ import { useControls } from "leva";
 import * as THREE from "three";
 import "./WeaveVisualizationRenderer.css";
 import { generateNewGrid } from "./weave_design_algorithm";
-import { Wefts, Warps } from "./RenderingComponents.tsx"; // Adjust the relative path
+import { Wefts, Warps } from "./RenderingComponents.tsx";
+import { useSharedState } from "./SharedState.tsx";
 
 // input weave array
 const basicWeave2DArray: boolean[][] = [
@@ -110,11 +111,13 @@ function WeaveVisualizationRenderer() {
   //   console.log(`${buttonName} clicked!`);
   // }
 
+  const { showGrid, showNavigationCube } = useSharedState();
+
   // GUI control
-  const { show_grid, show_navigation_cube } = useControls({
-    show_grid: { value: true },
-    show_navigation_cube: { value: true },
-  });
+  // const { show_grid, show_navigation_cube } = useControls({
+  //   show_grid: { value: true },
+  //   show_navigation_cube: { value: true },
+  // });
 
   return (
     <div id="canvas-container">
@@ -131,12 +134,12 @@ function WeaveVisualizationRenderer() {
           <meshBasicMaterial color={renderingPlaneColor} />
         </Plane>
         {/* <axesHelper args={[10]} /> */}
-        {show_navigation_cube && (
+        {showNavigationCube && (
           <GizmoHelper alignment="top-left" margin={[50, 50]}>
             <GizmoViewcube color={renderingGridColor} />
           </GizmoHelper>
         )}
-        {show_grid && (
+        {showGrid && (
           <primitive
             object={
               new THREE.GridHelper(

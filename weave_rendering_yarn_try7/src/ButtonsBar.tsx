@@ -20,6 +20,7 @@ import {
   Box,
   Redo2,
 } from "lucide-react";
+import { useSharedState } from "./SharedState";
 
 // * app running in main *
 function ButtonsBar() {
@@ -43,6 +44,18 @@ function ButtonsBar() {
   unClickedButtonColor = "#5A5A5A";
   clickedButtonColor = "#FFFFFF";
   clickedBackgroundButtonColor = "#D8D8D8";
+
+  // button states
+  const {
+    setWeftSpacing,
+    setWeftThickness,
+    setWarpSpacing,
+    setWarpThickness,
+    showGrid,
+    setShowGrid,
+    showNavigationCube,
+    setShowNavigationCube,
+  } = useSharedState();
 
   return (
     <div
@@ -113,11 +126,18 @@ function ButtonsBar() {
               }}
             >
               {/* show grid button */}
-              <Button size="icon">
+              <Button
+                size="icon"
+                onClick={() => setShowGrid(!showGrid)}
+                color={clickedBackgroundButtonColor}
+              >
                 <Frame size={buttonSize} color={unClickedButtonColor} />
               </Button>
               {/* show nav box button */}
-              <Button size="icon">
+              <Button
+                size="icon"
+                onClick={() => setShowNavigationCube(!showNavigationCube)}
+              >
                 {" "}
                 <Box size={buttonSize} color={unClickedButtonColor} />{" "}
               </Button>

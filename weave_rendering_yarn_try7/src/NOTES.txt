@@ -14,8 +14,8 @@
 // -  use real theme to adapt theme of viz to app's theme (use realTheme to determine if 'light' or 'dark' to set a light or dark color)
 
 // * PROGRESS *
-//    cant get the conditional dropboxes to work
-//    got weft start and end points to save to an array but wont update when wefts re-renders
+//    need to get the size of the icon to change with the variable
+//    need to invert to the correct colors when the button is pressed
 
 // * Buttons on tile *
 // show raw weave design or render
