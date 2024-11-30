@@ -15,7 +15,8 @@
 
 // * PROGRESS *
 //    need to get the size of the icon to change with the variable
-//    need to invert to the correct colors when the button is pressed
+//    need to add to the weft and warp button sliders to match the input number
+//    get the variable buttons to share state and make changes in the rendering plane
 
 // * Buttons on tile *
 // show raw weave design or render

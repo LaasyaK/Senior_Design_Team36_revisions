@@ -105,19 +105,7 @@ function WeaveVisualizationRenderer() {
   renderingGridColor = "#FFFFFF";
   renderingLightIntensity = 2;
 
-  // function handleButtonClick(event: React.MouseEvent<HTMLButtonElement>) {
-  //   const button = event.target as HTMLButtonElement;  // Type assertion
-  //   const buttonName = button.innerText;
-  //   console.log(`${buttonName} clicked!`);
-  // }
-
   const { showGrid, showNavigationCube } = useSharedState();
-
-  // GUI control
-  // const { show_grid, show_navigation_cube } = useControls({
-  //   show_grid: { value: true },
-  //   show_navigation_cube: { value: true },
-  // });
 
   return (
     <div id="canvas-container">
@@ -133,6 +121,7 @@ function WeaveVisualizationRenderer() {
         <Plane args={[20, 20]} rotation-x={-Math.PI * 0.5} position-y={-1.05}>
           <meshBasicMaterial color={renderingPlaneColor} />
         </Plane>
+
         {/* <axesHelper args={[10]} /> */}
         {showNavigationCube && (
           <GizmoHelper alignment="top-left" margin={[50, 50]}>

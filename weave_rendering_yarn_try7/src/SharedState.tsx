@@ -9,12 +9,16 @@ type SharedState = {
   warpThickness: number;
   showGrid: boolean;
   showNavigationCube: boolean;
+  showLoops: boolean;
+  displayOption: string;
   setWeftSpacing: (value: number) => void;
   setWeftThickness: (value: number) => void;
   setWarpSpacing: (value: number) => void;
   setWarpThickness: (value: number) => void;
   setShowGrid: (value: boolean) => void;
   setShowNavigationCube: (value: boolean) => void;
+  setShowLoops: (value: boolean) => void;
+  setDisplayOption: (value: string) => void;
 };
 
 // Create a Context
@@ -33,6 +37,8 @@ export const SharedStateProvider: React.FC<SharedStateProviderProps> = ({
   const [warpThickness, setWarpThickness] = useState(0.1);
   const [showGrid, setShowGrid] = useState(true);
   const [showNavigationCube, setShowNavigationCube] = useState(true);
+  const [showLoops, setShowLoops] = useState(false);
+  const [displayOption, setDisplayOption] = useState("raw");
 
   return (
     <SharedStateContext.Provider
@@ -43,12 +49,16 @@ export const SharedStateProvider: React.FC<SharedStateProviderProps> = ({
         warpThickness,
         showGrid,
         showNavigationCube,
+        showLoops,
+        setShowLoops,
         setWeftSpacing,
         setWeftThickness,
         setWarpSpacing,
         setWarpThickness,
         setShowGrid,
         setShowNavigationCube,
+        displayOption,
+        setDisplayOption,
       }}
     >
       {children}
