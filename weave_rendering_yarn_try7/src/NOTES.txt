@@ -15,87 +15,23 @@
 
 // * PROGRESS *
 //    need to get the size of the icon to change with the variable
-//    need to add to the weft and warp button sliders to match the input number
-//    get the variable buttons to share state and make changes in the rendering plane
+//    need the ratio of the size of the floating bar and test to change as snapped into new place
+//    need to get the state of the tile setup
+//    need to make a function that connects the loops
 
 // * Buttons on tile *
-// show raw weave design or render
-//    render 1 or 2 loops
-// number of layers
-// weft spacing
-// weft thickness
-// warp spacing
-// warp thickness
-// grid toggle
+// - show raw weave design, 1, 2 loop design
+// - weft spacing
+// - weft thickness
+// - warp spacing
+// - warp thickness
+// - grid toggle
 // connect weft to show how the loops would look
-// hide all buttons
-// hide the gizmo
+// - hide all buttons
+// - hide the gizmo
 // mouse intructions
 // maybeee can change colors (may want them to be default)
 
 //  WHEN COPYING OVER TO lOOM3D FILES DONT COPY AND PASTE THE WHOLE DOC
 
 
-
-// _______________________________________________________________________________________
-// *** POPOVER BUTTON WORKS TO PULL UP A MOCK UP MENU
-   //  <div
-   //    id="floating-toggle-group"
-   //    style={{
-   //      position: "absolute",
-   //      bottom: "20px",
-   //      left: "20px",
-   //      backgroundColor: "rgba(255, 255, 255, 0.9)",
-   //      padding: "10px",
-   //      borderRadius: "8px",
-   //      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-   //      display: "flex",
-   //      gap: "8px",
-   //    }}
-   //  >
-   //    <Popover>
-   //      <PopoverTrigger asChild>
-   //        <Button variant="outline">Open popover</Button>
-   //      </PopoverTrigger>
-   //      <PopoverContent className="w-80">
-   //        <div className="grid gap-4">
-   //          <div className="space-y-2">
-   //            <h4 className="font-medium leading-none">Dimensions</h4>
-   //            <p className="text-sm text-muted-foreground">
-   //              Set the dimensions for the layer.
-   //            </p>
-   //          </div>
-   //          <div className="grid gap-2">
-   //            <div className="grid grid-cols-3 items-center gap-4">
-   //              <Input
-   //                id="width"
-   //                defaultValue="100%"
-   //                className="col-span-2 h-8"
-   //              />
-   //            </div>
-   //            <div className="grid grid-cols-3 items-center gap-4">
-   //              <Input
-   //                id="maxWidth"
-   //                defaultValue="300px"
-   //                className="col-span-2 h-8"
-   //              />
-   //            </div>
-   //            <div className="grid grid-cols-3 items-center gap-4">
-   //              <Input
-   //                id="height"
-   //                defaultValue="25px"
-   //                className="col-span-2 h-8"
-   //              />
-   //            </div>
-   //            <div className="grid grid-cols-3 items-center gap-4">
-   //              <Input
-   //                id="maxHeight"
-   //                defaultValue="none"
-   //                className="col-span-2 h-8"
-   //              />
-   //            </div>
-   //          </div>
-   //        </div>
-   //      </PopoverContent>
-   //    </Popover>
-   //  </div>

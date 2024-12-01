@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import WeaveVisualizationRenderer from "./WeaveVisualizationRenderer.tsx";
 import ButtonsBar from "./ButtonsBar.tsx";
-import { SharedStateProvider } from "./SharedState.tsx";
+import { SharedStateProvider } from "./ButtonsSharedState.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

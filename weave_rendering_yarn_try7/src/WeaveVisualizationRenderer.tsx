@@ -13,9 +13,9 @@ import {
 import { useControls } from "leva";
 import * as THREE from "three";
 import "./WeaveVisualizationRenderer.css";
-import { generateNewGrid } from "./weave_design_algorithm";
+import { generateNewGrid } from "./WeaveDesignAlgorithim.tsx";
 import { Wefts, Warps } from "./RenderingComponents.tsx";
-import { useSharedState } from "./SharedState.tsx";
+import { useSharedState } from "./ButtonsSharedState.tsx";
 
 // input weave array
 const basicWeave2DArray: boolean[][] = [
@@ -26,38 +26,30 @@ const basicWeave2DArray: boolean[][] = [
 ];
 
 // * re-rendering weave with controls *
-const TitleControls: React.FC = () => {
+const WeaveRendering: React.FC = () => {
   const {
-    show,
-    show_loops,
-    weft_spacing,
-    weft_thickness,
-    warp_spacing,
-    warp_thickness,
-    // set,
-  } = useControls({
-    show: {
-      value: "Raw Weave Design",
-      options: ["Raw Weave Design", "1 Layered Loop", "2 Layered Loops"],
-    },
+    displayOption,
+    weftSpacing,
+    weftThickness,
+    warpSpacing,
+    warpThickness,
+  } = useSharedState();
+
+  const { show_loops } = useControls({
     show_loops: { value: false },
-    weft_spacing: { value: 0.2, min: 0.0, max: 3.0, step: 0.01 },
-    weft_thickness: { value: 0.1, min: 0.01, max: 0.6, step: 0.01 },
-    warp_spacing: { value: 0.2, min: 0.0, max: 3.0, step: 0.01 },
-    warp_thickness: { value: 0.1, min: 0.01, max: 0.6, step: 0.01 },
   });
   const number_of_layers = React.useMemo(() => {
-    switch (show) {
-      case "Raw Weave Design":
+    switch (displayOption) {
+      case "raw":
         return 1;
-      case "1 Layered Loop":
+      case "one":
         return 2;
-      case "2 Layered Loops":
+      case "two":
         return 4;
       default:
         return 1;
     }
-  }, [show]);
+  }, [displayOption]);
   // determining weave design based on num of layers to render
   const inputWeave = React.useMemo(() => {
     if (number_of_layers == 1) {
@@ -75,17 +67,17 @@ const TitleControls: React.FC = () => {
     <>
       <Wefts
         weaveArray={inputWeave}
-        thickness={weft_thickness}
-        weftSpacing={weft_spacing}
-        warpSpacing={warp_spacing}
+        thickness={weftThickness}
+        weftSpacing={weftSpacing}
+        warpSpacing={warpSpacing}
         numOfLayers={number_of_layers}
       />
       <Warps
         weaveArray={inputWeave}
-        warpThickness={warp_thickness}
-        weftThickness={weft_thickness}
-        warpspacing={warp_spacing}
-        weftSpacing={weft_spacing}
+        warpThickness={warpThickness}
+        weftThickness={weftThickness}
+        warpspacing={warpSpacing}
+        weftSpacing={weftSpacing}
         numOfLayers={number_of_layers}
       />
     </>
@@ -105,7 +97,7 @@ function WeaveVisualizationRenderer() {
   renderingGridColor = "#FFFFFF";
   renderingLightIntensity = 2;
 
-  const { showGrid, showNavigationCube } = useSharedState();
+  const { showGrid, showNavigationCube } = useSharedState(); // used to show grid and nav box
 
   return (
     <div id="canvas-container">
@@ -143,7 +135,7 @@ function WeaveVisualizationRenderer() {
         )}
 
         {/* controls variables for re-rendering */}
-        <TitleControls />
+        <WeaveRendering />
 
         {/* lights */}
         <ambientLight
