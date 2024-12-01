@@ -1,7 +1,7 @@
 // * Imports *
 import React /*, { useMemo, useRef, useEffect } */ from "react";
 import * as THREE from "three";
-import "./WeaveVisualizationRenderer";
+import "./Rendering";
 
 // * wefts functions *
 export type WeftProps = {
